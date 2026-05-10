@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+  {% block title %}Elections{% endblock %}
+  {% block content %}
+  <h2>Active Elections</h2>
+  {% if elections %}
+    <div class="row mt-3">
+      {% for election in elections %}
+        <div class="col-md-4 mb-3">
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">{{ election.title }}</h5>
+              <p class="text-muted small">Ends: {{ election.end_time|date:"d M Y, H:i" }}</p>
+              <a href="/vote/{{ election.pk }}/cast/" class="btn btn-primary btn-sm">Vote</a>
+              <a href="/vote/{{ election.pk }}/results/" class="btn btn-outline-secondary
+  btn-sm">Results</a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted mt-3">No active elections at the moment.</p>
+  {% endif %}
+{% endblock %}
+
+ 

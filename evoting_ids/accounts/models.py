@@ -5,9 +5,9 @@ from django.db import models
                                                                                                             
 class CustomUser(AbstractUser):
       ROLE_CHOICES = [                                                                                      
-          ('voter',       'Voter'),                                                                       
-          ('admin',       'Admin'),
-          ('soc_analyst', 'SOC Analyst'),
+          ('voter','Voter'),                                                                       
+          ('admin','Admin'),
+          ('soc_analyst','SOC Analyst'),
       ]
       role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='voter')
 
