@@ -22,7 +22,7 @@ class LoggingMiddleware:
 
           response = self.get_response(request)
 
-          _, should_block = run_ids_pipeline(request, response)
+          _, should_block = run_ids_pipeline(request)
 
           if should_block:
               return HttpResponseForbidden("Access denied by IDS.")
