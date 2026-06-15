@@ -8,4 +8,4 @@ pandas==2.2.2
 joblib==1.4.2 
 faker==24.11.0
 matplotlib==3.8.4 
-weasyprint==62.0
+xhtml2pdf==0.2.16

@@ -16,6 +16,9 @@ class RuleResult:
 
 def brute_force_rule(event_data: dict, db_session=None) -> RuleResult:
       from ids_engine.models import SecurityEvent
+      current_type = event_data.get('event_type', '')
+      if current_type not in ('LOGIN_FAIL', 'LOGIN_SUCCESS'):
+          return RuleResult(False, 'HIGH', 0, 'brute_force_rule', 'Not a login event')
       cutoff = datetime.now(tz=timezone.utc) - timedelta(seconds=60)
       count = SecurityEvent.objects.filter(
           ip_address=event_data['ip_address'],

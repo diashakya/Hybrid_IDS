@@ -22,7 +22,16 @@ class LoggingMiddleware:
 
           response = self.get_response(request)
 
-          _, should_block = run_ids_pipeline(request)
+          is_login_path = (
+              '/accounts/login/' in request.path or
+              request.path.startswith('/admin/login/')
+          )
+          if is_login_path and request.method == 'POST':
+              event_type = 'LOGIN_SUCCESS' if response.status_code == 302 else 'LOGIN_FAIL'
+          else:
+              event_type = 'GENERIC'
+
+          _, should_block = run_ids_pipeline(request, event_type=event_type)
 
           if should_block:
               return HttpResponseForbidden("Access denied by IDS.")

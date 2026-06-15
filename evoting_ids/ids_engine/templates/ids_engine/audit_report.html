@@ -16,6 +16,7 @@
       .badge-high     { color: #000; background: #ffc107; padding: 2px 6px; border-radius: 4px; }
       .badge-medium   { color: #000; background: #17a2b8; padding: 2px 6px; border-radius: 4px; }
       .badge-low      { color: #fff; background: #28a745; padding: 2px 6px; border-radius: 4px; }
+      .badge-rule     { color: #fff; background: #1a1a2e; padding: 2px 6px; border-radius: 4px; }
       .footer { text-align: center; margin-top: 40px; color: #888; font-size: 10px; }
     </style>
   </head>
@@ -90,6 +91,7 @@
       <th>Timestamp</th>
       <th>Event Type</th>
       <th>IP Address</th>
+      <th>Rule Triggered</th>
       <th>Risk Level</th>
       <th>Risk Score</th>
       <th>Action</th>
@@ -101,6 +103,18 @@
       <td>{{ e.timestamp|date:"Y-m-d H:i:s" }}</td>
       <td>{{ e.event_type }}</td>
       <td>{{ e.ip_address }}</td>
+      <td>
+        {% if e.rule_triggered %}
+          {% if e.rule_name == 'brute_force_rule' %}<span class="badge-rule">Brute Force</span>
+          {% elif e.rule_name == 'duplicate_vote_rule' %}<span class="badge-rule">Duplicate Vote</span>
+          {% elif e.rule_name == 'blocked_ip_rule' %}<span class="badge-rule">Blocked IP</span>
+          {% elif e.rule_name == 'sql_injection_rule' %}<span class="badge-rule">SQL Injection</span>
+          {% elif e.rule_name == 'rapid_request_rule' %}<span class="badge-rule">Rapid Requests</span>
+          {% elif e.rule_name == 'admin_abuse_rule' %}<span class="badge-rule">Admin Abuse</span>
+          {% else %}<span class="badge-rule">{{ e.rule_name }}</span>
+          {% endif %}
+        {% else %}—{% endif %}
+      </td>
       <td>
         <span class="badge-{{ e.risk_level|lower }}">{{ e.risk_level }}</span>
       </td>

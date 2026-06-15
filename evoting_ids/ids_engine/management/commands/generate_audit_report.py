@@ -4,6 +4,15 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from ids_engine.models import SecurityEvent
 
+RULE_LABELS = {
+    'brute_force_rule':    'Brute Force',
+    'duplicate_vote_rule': 'Duplicate Vote',
+    'blocked_ip_rule':     'Blocked IP',
+    'sql_injection_rule':  'SQL Injection',
+    'rapid_request_rule':  'Rapid Requests',
+    'admin_abuse_rule':    'Admin Abuse',
+}
+
 
 class Command(BaseCommand):
       help = 'Generate a PDF audit report of all IDS activity'
@@ -36,7 +45,10 @@ class Command(BaseCommand):
               name = e.rule_name or 'unknown'
               rule_counts[name] = rule_counts.get(name, 0) + 1
 
-          top_rules = sorted(rule_counts.items(), key=lambda x: x[1], reverse=True)
+          top_rules = [
+              (RULE_LABELS.get(name, name), count)
+              for name, count in sorted(rule_counts.items(), key=lambda x: x[1], reverse=True)
+          ]
 
           # Detection comparison
           rule_detected   = events.filter(rule_score__gt=30).count()

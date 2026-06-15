@@ -54,6 +54,7 @@ def run_ids_pipeline(request, event_type='GENERIC') -> tuple:
               'request_payload': payload,
               'session_id':      session_id,
               'status_code':     status_code,
+              'event_type':      event_type,
           }
 
           rule_result  = run_all_rules(event_data)

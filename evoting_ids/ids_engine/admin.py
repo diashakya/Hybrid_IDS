@@ -10,16 +10,32 @@ from django.contrib import admin
 from ids_engine.models import SecurityEvent, BlockedIP
 
 
+RULE_LABELS = {
+    'brute_force_rule':    'Brute Force',
+    'duplicate_vote_rule': 'Duplicate Vote',
+    'blocked_ip_rule':     'Blocked IP',
+    'sql_injection_rule':  'SQL Injection',
+    'rapid_request_rule':  'Rapid Requests',
+    'admin_abuse_rule':    'Admin Abuse',
+    'none':                '—',
+}
+
 @admin.register(SecurityEvent)
 class SecurityEventAdmin(admin.ModelAdmin):
     list_display = [
         'timestamp', 'event_type', 'ip_address',
-        'rule_score', 'ml_anomaly_score', 'risk_score',
-        'risk_level', 'action_taken', 'iso_control'
+        'triggered_rule', 'rule_score', 'ml_anomaly_score',
+        'risk_score', 'risk_level', 'action_taken', 'iso_control'
     ]
-    list_filter  = ['risk_level', 'action_taken', 'event_type']
+    list_filter  = ['risk_level', 'action_taken', 'event_type', 'rule_triggered']
     search_fields = ['ip_address', 'rule_name', 'iso_control']
     ordering     = ['-timestamp']
+
+    @admin.display(description='Rule Triggered')
+    def triggered_rule(self, obj):
+        if not obj.rule_triggered:
+            return '—'
+        return RULE_LABELS.get(obj.rule_name, obj.rule_name)
 
     readonly_fields = [
         'timestamp', 'event_type', 'user', 'ip_address',

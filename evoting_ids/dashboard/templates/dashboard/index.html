@@ -76,6 +76,7 @@
               <th>Time</th>
               <th>Event Type</th>
               <th>IP Address</th>
+              <th>Rule Triggered</th>
               <th>Risk Level</th>
               <th>Risk Score</th>
               <th>Action</th>
@@ -83,7 +84,7 @@
             </tr>
           </thead>
           <tbody id="alert-body">
-            <tr><td colspan="7" class="text-center text-muted py-3">Loading...</td></tr>
+            <tr><td colspan="8" class="text-center text-muted py-3">Loading...</td></tr>
           </tbody>
         </table>
       </div>
@@ -148,6 +149,21 @@
   let hourlyChart = null;
   let comparisonChart = null;
 
+  const RULE_LABELS = {
+    'brute_force_rule':    'Brute Force',
+    'duplicate_vote_rule': 'Duplicate Vote',
+    'blocked_ip_rule':     'Blocked IP',
+    'sql_injection_rule':  'SQL Injection',
+    'rapid_request_rule':  'Rapid Requests',
+    'admin_abuse_rule':    'Admin Abuse',
+  };
+
+  function ruleBadge(name) {
+    if (!name || name === 'none') return '<span class="text-muted">—</span>';
+    const label = RULE_LABELS[name] || name;
+    return `<span class="badge bg-dark">${label}</span>`;
+  }
+
   function riskBadge(level) {
     const map = {
       CRITICAL: 'bg-danger',
@@ -183,13 +199,14 @@
 
       const tbody = document.getElementById('alert-body');
       if (alerts.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-3">No HIGH or CRITICAL alerts today</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-3">No HIGH or CRITICAL alerts today</td></tr>';
       } else {
         tbody.innerHTML = alerts.map(e => `
           <tr>
             <td class="text-nowrap">${e.timestamp}</td>
             <td>${e.event_type}</td>
             <td><code>${e.ip_address}</code></td>
+            <td>${ruleBadge(e.rule_name)}</td>
             <td>${riskBadge(e.risk_level)}</td>
             <td>${e.risk_score}</td>
             <td>${actionBadge(e.action_taken)}</td>
