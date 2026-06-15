@@ -82,3 +82,50 @@ def api_hourly_events(request):
           result.append({'hour': label, 'count': counts.get(label, 0)})
 
       return JsonResponse(result, safe=False)
+
+def api_comparison(request):
+      from ids_engine.risk_scorer import get_risk_level
+      events = SecurityEvent.objects.exclude(ml_anomaly_score=None)
+      total = events.count()
+
+      rule_detected   = 0
+      ml_detected     = 0
+      hybrid_detected = 0
+
+      for e in events:
+          if get_risk_level(e.rule_score) in ('MEDIUM', 'HIGH', 'CRITICAL'):
+              rule_detected += 1
+          if get_risk_level(e.ml_anomaly_score or 0) in ('MEDIUM', 'HIGH', 'CRITICAL'):
+              ml_detected += 1
+          if e.risk_level in ('MEDIUM', 'HIGH', 'CRITICAL'):
+              hybrid_detected += 1
+
+      return JsonResponse({
+          'total': total,
+          'rule_detected':   rule_detected,
+          'ml_detected':     ml_detected,
+          'hybrid_detected': hybrid_detected,
+          'rule_rate':    round(rule_detected   / total * 100, 1) if total else 0,
+          'ml_rate':      round(ml_detected     / total * 100, 1) if total else 0,
+          'hybrid_rate':  round(hybrid_detected / total * 100, 1) if total else 0,
+      })
+
+
+def download_audit_report(request):
+      import os
+      from django.http import FileResponse, HttpResponse
+      output_path = os.path.join(os.getcwd(), 'audit_report.pdf')
+      try:
+          from django.core.management import call_command
+          call_command('generate_audit_report')
+      except Exception as e:
+          return HttpResponse(f'Report generation failed: {e}', status=500)
+
+      if not os.path.exists(output_path):
+          return HttpResponse('Report file not found.', status=404)
+
+      return FileResponse(
+          open(output_path, 'rb'),
+          as_attachment=True,
+          filename='hybrid_ids_audit_report.pdf'
+      )

@@ -34,10 +34,17 @@ def run_ids_pipeline(request, event_type='GENERIC') -> tuple:
 
           if event_type == 'GENERIC':
               path = request.path
-              if '/accounts/login/' in path:
+              is_login_path = '/accounts/login/' in path or path.startswith('/admin/login/')
+              if is_login_path:
                   event_type = 'LOGIN_SUCCESS' if user else 'LOGIN_FAIL'
-              elif '/vote/' in path:
+              elif '/accounts/logout/' in path:
+                  event_type = 'LOGOUT'
+              elif '/vote/' in path and request.method == 'POST':
                   event_type = 'VOTE_CAST'
+              elif '/vote/' in path:
+                  event_type = 'PAGE_VIEW'
+              elif '/api/' in path:
+                  event_type = 'API_REQUEST'
               elif '/admin/' in path:
                   event_type = 'ADMIN_ACTION'
               else:
