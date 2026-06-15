@@ -9,4 +9,5 @@ urlpatterns = [
       path('hourly-events/', views.api_hourly_events),
       path('comparison/', views.api_comparison),
       path('audit-report/', views.download_audit_report),
+      path('active-users/', views.api_active_users),
 ]

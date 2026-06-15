@@ -129,3 +129,42 @@ def download_audit_report(request):
           as_attachment=True,
           filename='hybrid_ids_audit_report.pdf'
       )
+
+def api_active_users(request):
+        from django.contrib.sessions.models import Session
+        from accounts.models import CustomUser
+
+        active_sessions = Session.objects.filter(expire_date__gte=timezone.now())
+
+        user_ids = []
+        for session in active_sessions:
+            data = session.get_decoded()
+            uid = data.get('_auth_user_id')
+            if uid:
+                user_ids.append(int(uid))
+
+        if not user_ids:
+            return JsonResponse([], safe=False)
+
+        users = CustomUser.objects.filter(id__in=user_ids)
+        threshold = timezone.now() - timedelta(minutes=15)
+
+        result = []
+        for user in users:
+            last_event = SecurityEvent.objects.filter(user=user).order_by('-timestamp').first()
+            if last_event:
+                last_activity = last_event.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                status = 'ACTIVE' if last_event.timestamp >= threshold else 'IDLE'
+            else:
+                last_activity = '—'
+                status = 'IDLE'
+
+            result.append({
+                'username':      user.username,
+                'role':          user.role,
+                'last_activity': last_activity,
+                'status':        status,
+            })
+
+        result.sort(key=lambda x: x['status'] != 'ACTIVE')
+        return JsonResponse(result, safe=False)

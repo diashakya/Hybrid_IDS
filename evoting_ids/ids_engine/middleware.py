@@ -1,7 +1,7 @@
 from django.http import HttpResponseForbidden
 from ids_engine.pipeline import run_ids_pipeline
 
-INTERCEPT_PATHS = ['/accounts/login/', '/vote/', '/admin/', '/api/']
+INTERCEPT_PATHS = ['/accounts/login/', '/accounts/logout/', '/vote/', '/admin/', '/api/']
 SKIP_PATHS = ['/static/', '/media/', '/favicon.ico', '/admin/jsi18n/']
 
 
@@ -20,11 +20,20 @@ class LoggingMiddleware:
           if not should_intercept:
               return self.get_response(request)
 
+          # Skip all admin GET requests (viewing pages, browsing Security Events, etc.)
+          # Only record admin POST requests (creating candidates, blocking IPs, modifications)
+          if path.startswith('/admin/') and request.method == 'GET':
+              return self.get_response(request)
+
+          # Skip API dashboard poll requests — they are noise every 30 seconds
+          if path.startswith('/api/'):
+              return self.get_response(request)
+
           response = self.get_response(request)
 
           is_login_path = (
-              '/accounts/login/' in request.path or
-              request.path.startswith('/admin/login/')
+              '/accounts/login/' in path or
+              path.startswith('/admin/login/')
           )
           if is_login_path and request.method == 'POST':
               event_type = 'LOGIN_SUCCESS' if response.status_code == 302 else 'LOGIN_FAIL'
