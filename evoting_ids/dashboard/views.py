@@ -22,7 +22,7 @@ def api_latest_alerts(request):
       for e in events:
           data.append({
               'id': e.id,
-              'timestamp': e.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+              'timestamp': timezone.localtime(e.timestamp).strftime('%Y-%m-%d %H:%M:%S'),
               'event_type': e.event_type,
               'ip_address': e.ip_address,
               'risk_level': e.risk_level,
@@ -73,7 +73,7 @@ def api_hourly_events(request):
 
       counts = {}
       for e in qs:
-          hour = e.timestamp.strftime('%H:00')
+          hour = timezone.localtime(e.timestamp).strftime('%H:00')
           counts[hour] = counts.get(hour, 0) + 1
 
       result = []
@@ -153,7 +153,7 @@ def api_active_users(request):
         for user in users:
             last_event = SecurityEvent.objects.filter(user=user).order_by('-timestamp').first()
             if last_event:
-                last_activity = last_event.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+                last_activity = timezone.localtime(last_event.timestamp).strftime('%Y-%m-%d %H:%M:%S')
                 status = 'ACTIVE' if last_event.timestamp >= threshold else 'IDLE'
             else:
                 last_activity = '—'
