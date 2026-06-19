@@ -83,6 +83,14 @@
     .metric-card  { border-left: 4px solid #0d6efd; }
     .table-responsive { max-height: 380px; overflow-y: auto; }
     footer { color: var(--color-muted) !important; }
+    [data-theme="dark"] .btn-outline-dark {
+      color: var(--color-text);
+      border-color: var(--color-border);
+    }
+    [data-theme="dark"] .btn-outline-dark:hover {
+      background-color: rgba(255,255,255,0.1);
+      color: var(--color-text);
+    }
 
     #theme-toggle {
       font-size: 0.8rem;
