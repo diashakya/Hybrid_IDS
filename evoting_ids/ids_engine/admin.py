@@ -17,6 +17,7 @@ RULE_LABELS = {
     'sql_injection_rule':  'SQL Injection',
     'rapid_request_rule':  'Rapid Requests',
     'admin_abuse_rule':    'Admin Abuse',
+    'session_anomaly':     'Session Anomaly',
     'none':                '—',
 }
 

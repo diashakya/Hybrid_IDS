@@ -6,6 +6,7 @@ from ids_engine.ml_detector import score_event
 from ids_engine.risk_scorer import fuse_scores, get_risk_level
 from ids_engine.decision_engine import get_action
 from ids_engine.compliance_mapper import map_compliance
+from ids_engine.session_analyzer import analyse_session
 
 logger = logging.getLogger(__name__)
 
@@ -57,12 +58,29 @@ def run_ids_pipeline(request, event_type='GENERIC') -> tuple:
               'event_type':      event_type,
           }
 
-          rule_result  = run_all_rules(event_data)
-          ml_score     = score_event(event_data)
-          final_score  = fuse_scores(float(rule_result.score), ml_score)
+          rule_result = run_all_rules(event_data)
+          ml_score    = score_event(event_data)
+          fused_score = fuse_scores(float(rule_result.score), ml_score)
+
+          # Session-level anomaly analysis
+          session_result = analyse_session(session_id, ip_address)
+          session_score  = session_result['score']
+
+          # Session score wins if it is the stronger signal
+          if session_score > fused_score and session_score > 30:
+              final_score        = session_score
+              saved_rule_name    = 'session_anomaly'
+              saved_rule_triggered = True
+              saved_rule_score   = int(session_score)
+          else:
+              final_score          = fused_score
+              saved_rule_name      = rule_result.rule_name
+              saved_rule_triggered = rule_result.triggered
+              saved_rule_score     = rule_result.score
+
           risk_level   = get_risk_level(final_score)
           action_taken, should_block = get_action(risk_level)
-          iso_control, nist_category = map_compliance(rule_result.rule_name, risk_level)
+          iso_control, nist_category = map_compliance(saved_rule_name, risk_level)
 
           event = SecurityEvent(
               event_type       = event_type,
@@ -74,9 +92,9 @@ def run_ids_pipeline(request, event_type='GENERIC') -> tuple:
               method           = method,
               status_code      = status_code,
               request_payload  = payload,
-              rule_triggered   = rule_result.triggered,
-              rule_name        = rule_result.rule_name,
-              rule_score       = rule_result.score,
+              rule_triggered   = saved_rule_triggered,
+              rule_name        = saved_rule_name,
+              rule_score       = saved_rule_score,
               ml_anomaly_score = ml_score,
               risk_score       = final_score,
               risk_level       = risk_level,

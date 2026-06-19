@@ -111,6 +111,7 @@
           {% elif e.rule_name == 'sql_injection_rule' %}<span class="badge-rule">SQL Injection</span>
           {% elif e.rule_name == 'rapid_request_rule' %}<span class="badge-rule">Rapid Requests</span>
           {% elif e.rule_name == 'admin_abuse_rule' %}<span class="badge-rule">Admin Abuse</span>
+          {% elif e.rule_name == 'session_anomaly' %}<span class="badge-rule">Session Anomaly</span>
           {% else %}<span class="badge-rule">{{ e.rule_name }}</span>
           {% endif %}
         {% else %}—{% endif %}
