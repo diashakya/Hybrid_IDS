@@ -1,48 +1,241 @@
 <!DOCTYPE html>
-  <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title>Register</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-  </head>
-  <body class="bg-light">
-  <div class="container mt-5" style="max-width: 480px;">
-    <div class="card shadow-sm">
-      <div class="card-body">
-        <h3 class="card-title mb-4">Create Account</h3>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register | Hybrid IDS E-Voting</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --brand-1: #4338ca;
+      --brand-2: #6366f1;
+      --brand-3: #0ea5e9;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #f3f4f8;
+    }
+    .auth-wrapper {
+      min-height: 100vh;
+      display: flex;
+    }
+    .auth-visual {
+      flex: 1 1 45%;
+      background: linear-gradient(155deg, var(--brand-3) 0%, var(--brand-2) 55%, var(--brand-1) 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 4rem 3.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .auth-visual::before, .auth-visual::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+    }
+    .auth-visual::before { width: 320px; height: 320px; top: -80px; right: -80px; }
+    .auth-visual::after { width: 220px; height: 220px; bottom: -60px; left: -40px; background: rgba(255,255,255,0.06); }
+    .auth-visual .brand-icon {
+      width: 60px; height: 60px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.15);
+      border-radius: 16px;
+      font-size: 1.6rem;
+      margin-bottom: 2rem;
+      backdrop-filter: blur(4px);
+    }
+    .auth-visual h1 {
+      font-size: 2.1rem;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+    .auth-visual p.lead-text {
+      color: rgba(255,255,255,0.85);
+      font-size: 1rem;
+      max-width: 380px;
+      position: relative;
+      z-index: 1;
+    }
+    .auth-feature-list {
+      margin-top: 2.5rem;
+      list-style: none;
+      padding: 0;
+      position: relative;
+      z-index: 1;
+    }
+    .auth-feature-list li {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      font-size: 0.92rem;
+      color: rgba(255,255,255,0.92);
+    }
+    .auth-feature-list i {
+      background: rgba(255,255,255,0.15);
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .auth-form-panel {
+      flex: 1 1 55%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+    }
+    .auth-card {
+      width: 100%;
+      max-width: 400px;
+      animation: fadeSlideUp 0.5s ease both;
+    }
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .auth-card h3 {
+      font-weight: 700;
+      color: #1f2333;
+      margin-bottom: 0.35rem;
+    }
+    .auth-card .subtitle {
+      color: #7a7f93;
+      font-size: 0.92rem;
+      margin-bottom: 2rem;
+    }
+    .field-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: #565b70;
+      margin-bottom: 0.4rem;
+      display: block;
+    }
+    .input-icon-wrap {
+      position: relative;
+    }
+    .input-icon-wrap i.field-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #9498ab;
+      font-size: 1rem;
+    }
+    .input-icon-wrap .form-control {
+      padding-left: 2.6rem;
+      height: 48px;
+      border-radius: 10px;
+      border: 1.5px solid #e4e5ee;
+      background: #fbfbfe;
+    }
+    .input-icon-wrap .form-control:focus {
+      border-color: var(--brand-2);
+      box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.15);
+      background: #fff;
+    }
+    .input-icon-wrap .toggle-eye {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #9498ab;
+      cursor: pointer;
+      padding: 0;
+      font-size: 1.05rem;
+    }
+    .input-icon-wrap .toggle-eye:hover { color: #565b70; }
+    .btn-brand {
+      height: 48px;
+      border-radius: 10px;
+      background: linear-gradient(120deg, var(--brand-1), var(--brand-2));
+      border: none;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .btn-brand:hover, .btn-brand:focus {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px rgba(67, 56, 202, 0.28);
+      background: linear-gradient(120deg, var(--brand-1), var(--brand-2));
+    }
+    .divider-text {
+      color: #b0b3c2;
+      font-size: 0.85rem;
+    }
+    @media (max-width: 767.98px) {
+      .auth-visual { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-wrapper">
+    <div class="auth-visual">
+      <div class="brand-icon"><i class="bi bi-person-plus-fill"></i></div>
+      <h1>Create Your<br>Voter Account</h1>
+      <p class="lead-text">Join a voting platform protected by a hybrid rule-based and machine-learning intrusion detection system.</p>
+      <ul class="auth-feature-list">
+        <li><i class="bi bi-shield-check"></i> Every session monitored for anomalies</li>
+        <li><i class="bi bi-lock"></i> Duplicate &amp; brute-force vote protection</li>
+        <li><i class="bi bi-clock-history"></i> Full audit trail for every action</li>
+      </ul>
+    </div>
+
+    <div class="auth-form-panel">
+      <div class="auth-card">
+        <h3>Create account</h3>
+        <p class="subtitle">Fill in your details to get started</p>
 
         {% if messages %}
           {% for msg in messages %}
-            <div class="alert alert-danger">{{ msg }}</div>
+            <div class="alert alert-danger py-2">{{ msg }}</div>
           {% endfor %}
         {% endif %}
 
         <form method="post">
           {% csrf_token %}
           <div class="mb-3">
-            <label class="form-label">Username</label>
-            <input type="text" name="username" class="form-control" required>
+            <label class="field-label">Username</label>
+            <div class="input-icon-wrap">
+              <i class="bi bi-person field-icon"></i>
+              <input type="text" name="username" class="form-control" placeholder="Choose a username" required>
+            </div>
           </div>
           <div class="mb-3">
-            <label class="form-label">Password</label>
-            <div class="input-group">
-              <input type="password" name="password1" id="password1" class="form-control" required>
-              <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password1', 'eyeIcon1')">
+            <label class="field-label">Password</label>
+            <div class="input-icon-wrap">
+              <i class="bi bi-lock field-icon"></i>
+              <input type="password" name="password1" id="password1" class="form-control" placeholder="Create a password" required>
+              <button class="toggle-eye" type="button" onclick="togglePassword('password1', 'eyeIcon1')">
                 <i id="eyeIcon1" class="bi bi-eye"></i>
               </button>
             </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Confirm Password</label>
-            <div class="input-group">
-              <input type="password" name="password2" id="password2" class="form-control" required>
-              <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('password2', 'eyeIcon2')">
+          <div class="mb-4">
+            <label class="field-label">Confirm Password</label>
+            <div class="input-icon-wrap">
+              <i class="bi bi-lock-fill field-icon"></i>
+              <input type="password" name="password2" id="password2" class="form-control" placeholder="Re-enter your password" required>
+              <button class="toggle-eye" type="button" onclick="togglePassword('password2', 'eyeIcon2')">
                 <i id="eyeIcon2" class="bi bi-eye"></i>
               </button>
             </div>
           </div>
-          <button type="submit" class="btn btn-primary w-100">Register</button>
+          <button type="submit" class="btn btn-brand text-white w-100">Register</button>
         </form>
 
         <script>
@@ -59,11 +252,9 @@
           }
         </script>
 
-        <p class="mt-3 text-center">Already have an account? <a href="/accounts/login/">Login</a></p>
+        <p class="mt-4 text-center divider-text">Already have an account? <a href="/accounts/login/" class="text-decoration-none fw-semibold" style="color: var(--brand-1);">Login</a></p>
       </div>
     </div>
   </div>
-  </body>
-  </html>
-
- 
+</body>
+</html>

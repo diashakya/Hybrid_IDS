@@ -1,19 +1,140 @@
 {% extends "base.html" %}
-  {% block title %}Results — {{ election.title }}{% endblock %}
-  {% block content %}
+{% block title %}Results — {{ election.title }}{% endblock %}
+
+{% block extra_head %}
+<style>
+  :root {
+    --brand-1: #4338ca;
+    --brand-2: #6366f1;
+    --brand-3: #0ea5e9;
+  }
+  .page-header {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+  .page-header .icon-badge {
+    width: 46px; height: 46px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--brand-1), var(--brand-3));
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .page-header h2 { margin: 0; font-weight: 700; color: #1f2333; }
+
+  .result-card {
+    border: 1.5px solid #e4e5ee;
+    border-radius: 14px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 0.9rem;
+    background: #fbfbfe;
+  }
+  .result-card.winner {
+    border-color: var(--brand-2);
+    background: #f2f2fe;
+  }
+  .result-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+  .result-name {
+    font-weight: 700;
+    color: #1f2333;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .result-name .crown { color: #f59e0b; }
+  .result-votes {
+    font-weight: 700;
+    color: #565b70;
+    font-size: 0.9rem;
+  }
+  .result-bar-track {
+    height: 12px;
+    border-radius: 999px;
+    background: #e8e9f3;
+    overflow: hidden;
+  }
+  .result-bar-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--brand-1), var(--brand-2), var(--brand-3));
+    transition: width 0.6s ease;
+  }
+  .result-pct {
+    font-size: 0.78rem;
+    color: #9498ab;
+    margin-top: 0.3rem;
+  }
+  .btn-outline-brand {
+    border: 1.5px solid #e4e5ee;
+    color: #565b70;
+    font-weight: 600;
+    background: #fff;
+  }
+  .btn-outline-brand:hover {
+    border-color: var(--brand-2);
+    color: var(--brand-1);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="icon-badge"><i class="bi bi-bar-chart-line"></i></div>
   <h2>Results: {{ election.title }}</h2>
-  <table class="table table-striped mt-3">
-    <thead>
-      <tr><th>Candidate</th><th>Votes</th></tr>
-    </thead>
-    <tbody>
-      {% for candidate in candidates %}
-        <tr>
-          <td>{{ candidate.name }}</td>
-          <td>{{ candidate.vote_count }}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <a href="/vote/" class="btn btn-outline-primary btn-sm">Back to Elections</a>
+</div>
+
+<div id="results-list">
+  {% for candidate in candidates %}
+    <div class="result-card" data-votes="{{ candidate.vote_count }}">
+      <div class="result-top-row">
+        <div class="result-name">{{ candidate.name }}</div>
+        <div class="result-votes">{{ candidate.vote_count }} vote{{ candidate.vote_count|pluralize }}</div>
+      </div>
+      <div class="result-bar-track">
+        <div class="result-bar-fill"></div>
+      </div>
+      <div class="result-pct">0%</div>
+    </div>
+  {% endfor %}
+</div>
+
+<a href="/vote/" class="btn btn-outline-brand btn-sm mt-2">
+  <i class="bi bi-arrow-left"></i> Back to Elections
+</a>
+
+<script>
+  (function () {
+    const cards = Array.from(document.querySelectorAll('#results-list .result-card'));
+    const totalVotes = cards.reduce((sum, card) => sum + parseInt(card.dataset.votes, 10), 0);
+
+    let topCard = null;
+    let topVotes = -1;
+    cards.forEach(function (card) {
+      const votes = parseInt(card.dataset.votes, 10);
+      const pct = totalVotes > 0 ? Math.round((votes / totalVotes) * 1000) / 10 : 0;
+      card.querySelector('.result-bar-fill').style.width = pct + '%';
+      card.querySelector('.result-pct').textContent = pct + '%';
+      if (votes > topVotes) {
+        topVotes = votes;
+        topCard = card;
+      }
+    });
+
+    if (topCard && topVotes > 0) {
+      topCard.classList.add('winner');
+      const crown = document.createElement('i');
+      crown.className = 'bi bi-trophy-fill crown';
+      topCard.querySelector('.result-name').prepend(crown);
+    }
+  })();
+</script>
 {% endblock %}
