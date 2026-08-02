@@ -28,10 +28,15 @@
       --color-code:     #79c0ff;
     }
 
+    html, body {
+      height: 100%;
+      margin: 0;
+    }
     body {
       background: var(--bg-body);
       color: var(--color-text);
       transition: background 0.3s, color 0.3s;
+      font-size: 0.9rem;
     }
     .card {
       background: var(--bg-card) !important;
@@ -80,8 +85,6 @@
       padding: 1px 5px;
       border-radius: 3px;
     }
-    .metric-card  { border-left: 4px solid #0d6efd; }
-    .table-responsive { max-height: 380px; overflow-y: auto; }
     footer { color: var(--color-muted) !important; }
     [data-theme="dark"] .btn-outline-dark {
       color: var(--color-text);
@@ -103,164 +106,252 @@
       transition: background 0.2s;
     }
     #theme-toggle:hover { background: rgba(255,255,255,0.15); }
+
+    /* ---- Single-screen SOC layout ---- */
+    .dashboard-shell {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .soc-navbar { flex: 0 0 auto; padding-top: .5rem; padding-bottom: .5rem; }
+    .main-grid {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto 1.3fr 1fr;
+      gap: 0.65rem;
+      padding: 0.65rem 0.9rem;
+    }
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.65rem;
+    }
+    .kpi-card { border-left: 4px solid #0d6efd; }
+    .kpi-card .card-body { padding: 0.5rem 0.9rem; }
+    .kpi-card .kpi-value { font-size: 1.55rem; font-weight: 700; line-height: 1.2; }
+
+    .row-alerts {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 0.65rem;
+      min-height: 0;
+    }
+    .row-charts {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.65rem;
+      min-height: 0;
+    }
+    .panel-card {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+    }
+    .panel-card .card-header {
+      flex: 0 0 auto;
+      padding: 0.45rem 0.9rem;
+    }
+    .panel-card .card-body {
+      flex: 1 1 auto;
+      min-height: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .panel-scroll {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+    }
+    .panel-scroll table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .chart-card .card-body {
+      padding: 0.5rem 0.75rem;
+    }
+    .chart-wrap {
+      position: relative;
+      flex: 1 1 auto;
+      min-height: 0;
+      width: 100%;
+    }
+    .comparison-stats {
+      flex: 0 0 auto;
+      padding: 0.4rem 0.2rem 0.2rem;
+    }
+    .comparison-stats .stat-value { font-size: 1.15rem; font-weight: 700; }
+    .comparison-stats .stat-label { font-size: 0.68rem; }
+
+    /* Fall back to a normal scrolling page only on genuinely small (mobile/tablet) screens */
+    @media (max-width: 767.98px) {
+      html, body { height: auto; }
+      .dashboard-shell { height: auto; overflow: visible; }
+      .main-grid { display: block; height: auto; }
+      .kpi-row, .row-alerts, .row-charts {
+        display: grid;
+        grid-template-columns: 1fr;
+        height: auto;
+        margin-bottom: 0.65rem;
+      }
+      .panel-card { height: auto; }
+      .panel-scroll { max-height: 320px; }
+      .chart-wrap { height: 240px; }
+    }
   </style>
 </head>
 <body>
 
-<!-- Navbar -->
-<nav class="navbar navbar-dark bg-dark px-4">
-  <span class="navbar-brand fw-bold">SOC Dashboard</span>
-  <div class="d-flex align-items-center gap-3 text-white">
-    <small>Last updated: <span id="last-updated">—</span></small>
-    <button id="theme-toggle">🌙 Dark</button>
-    <span class="badge bg-secondary">{{ request.user.username }}</span>
-  </div>
-</nav>
+<div class="dashboard-shell">
 
-<div class="container-fluid py-4">
+  <!-- Navbar -->
+  <nav class="navbar navbar-dark bg-dark px-4 soc-navbar">
+    <span class="navbar-brand fw-bold">SOC Dashboard</span>
+    <div class="d-flex align-items-center gap-3 text-white">
+      <small>Last updated: <span id="last-updated">—</span></small>
+      <button id="theme-toggle">🌙 Dark</button>
+      <span class="badge bg-secondary">{{ request.user.username }}</span>
+    </div>
+  </nav>
 
-  <!-- Metric Cards -->
-  <div class="row g-3 mb-4">
-    <div class="col-md-3">
-      <div class="card metric-card shadow-sm h-100">
+  <div class="main-grid">
+
+    <!-- KPI Cards -->
+    <div class="kpi-row">
+      <div class="card kpi-card shadow-sm">
         <div class="card-body">
           <div class="text-muted small">Total Events Today</div>
-          <div class="fs-2 fw-bold" id="total-events">—</div>
+          <div class="kpi-value" id="total-events">—</div>
         </div>
       </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card metric-card shadow-sm h-100" style="border-left-color:#dc3545">
+      <div class="card kpi-card shadow-sm" style="border-left-color:#dc3545">
         <div class="card-body">
           <div class="text-muted small">Blocked Requests</div>
-          <div class="fs-2 fw-bold text-danger" id="blocked-count">—</div>
+          <div class="kpi-value text-danger" id="blocked-count">—</div>
         </div>
       </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card metric-card shadow-sm h-100" style="border-left-color:#ffc107">
+      <div class="card kpi-card shadow-sm" style="border-left-color:#ffc107">
         <div class="card-body">
           <div class="text-muted small">Active Alerts</div>
-          <div class="fs-2 fw-bold text-warning" id="alert-count">—</div>
+          <div class="kpi-value text-warning" id="alert-count">—</div>
         </div>
       </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card metric-card shadow-sm h-100" style="border-left-color:#198754">
+      <div class="card kpi-card shadow-sm" style="border-left-color:#198754">
         <div class="card-body">
           <div class="text-muted small">Detection Rate</div>
-          <div class="fs-2 fw-bold text-success" id="detection-rate">—</div>
+          <div class="kpi-value text-success" id="detection-rate">—</div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Active Users -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-      <h5 class="mb-0">Active Users
-        <small class="text-muted fw-normal fs-6"> — sessions active now · auto-refreshes every 30s</small>
-      </h5>
-      <span class="badge bg-success fs-6" id="active-user-count">0</span>
-    </div>
-    <div class="card-body p-0">
-      <table class="table table-hover table-sm mb-0">
-        <thead class="table-dark">
-          <tr>
-            <th>Username</th>
-            <th>Role</th>
-            <th>Last Activity</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="active-users-body">
-          <tr><td colspan="4" class="text-center text-muted py-3">Loading...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+    <!-- Live Alert Feed + Active Users -->
+    <div class="row-alerts">
+      <div class="card shadow-sm panel-card">
+        <div class="card-header bg-white">
+          <h6 class="mb-0">Live Alert Feed
+            <small class="text-muted fw-normal"> — HIGH and CRITICAL events · every 30s</small>
+          </h6>
+        </div>
+        <div class="card-body">
+          <div class="panel-scroll">
+            <table class="table table-hover table-sm mb-0">
+              <thead class="table-dark">
+                <tr>
+                  <th>Time</th>
+                  <th>Event Type</th>
+                  <th>IP Address</th>
+                  <th>Rule Triggered</th>
+                  <th>Risk Level</th>
+                  <th>Risk Score</th>
+                  <th>Action</th>
+                  <th>ISO Control</th>
+                </tr>
+              </thead>
+              <tbody id="alert-body">
+                <tr><td colspan="8" class="text-center text-muted py-3">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
-  <!-- Alert Table -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-header bg-white">
-      <h5 class="mb-0">Live Alert Feed
-        <small class="text-muted fw-normal fs-6"> — HIGH and CRITICAL events · auto-refreshes every 30s</small>
-      </h5>
-    </div>
-    <div class="card-body p-0">
-      <div class="table-responsive">
-        <table class="table table-hover table-sm mb-0">
-          <thead class="table-dark sticky-top">
-            <tr>
-              <th>Time</th>
-              <th>Event Type</th>
-              <th>IP Address</th>
-              <th>Rule Triggered</th>
-              <th>Risk Level</th>
-              <th>Risk Score</th>
-              <th>Action</th>
-              <th>ISO Control</th>
-            </tr>
-          </thead>
-          <tbody id="alert-body">
-            <tr><td colspan="8" class="text-center text-muted py-3">Loading...</td></tr>
-          </tbody>
-        </table>
+      <div class="card shadow-sm panel-card">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <h6 class="mb-0">Active Users</h6>
+          <span class="badge bg-success" id="active-user-count">0</span>
+        </div>
+        <div class="card-body">
+          <div class="panel-scroll">
+            <table class="table table-hover table-sm mb-0">
+              <thead class="table-dark">
+                <tr>
+                  <th>Username</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="active-users-body">
+                <tr><td colspan="3" class="text-center text-muted py-3">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Charts -->
-  <div class="row g-3 mb-4">
-    <div class="col-md-6">
-      <div class="card shadow-sm h-100">
+    <!-- Charts + Detection Comparison -->
+    <div class="row-charts">
+      <div class="card shadow-sm panel-card chart-card">
         <div class="card-header bg-white"><strong>Risk Distribution</strong></div>
         <div class="card-body">
-          <canvas id="riskChart"></canvas>
+          <div class="chart-wrap"><canvas id="riskChart"></canvas></div>
         </div>
       </div>
-    </div>
-    <div class="col-md-6">
-      <div class="card shadow-sm h-100">
+
+      <div class="card shadow-sm panel-card chart-card">
         <div class="card-header bg-white"><strong>Events Last 24 Hours</strong></div>
         <div class="card-body">
-          <canvas id="hourlyChart"></canvas>
+          <div class="chart-wrap"><canvas id="hourlyChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="card shadow-sm panel-card chart-card">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+          <strong>Detection Comparison</strong>
+          <a href="/api/audit-report/" class="btn btn-sm btn-outline-dark py-0">Audit PDF</a>
+        </div>
+        <div class="card-body">
+          <div class="comparison-stats row g-1 text-center">
+            <div class="col-4">
+              <div class="stat-value text-secondary" id="rule-rate">—</div>
+              <div class="stat-label text-muted">Rule-Only</div>
+            </div>
+            <div class="col-4">
+              <div class="stat-value text-info" id="ml-rate">—</div>
+              <div class="stat-label text-muted">ML-Only</div>
+            </div>
+            <div class="col-4">
+              <div class="stat-value text-success" id="hybrid-rate">—</div>
+              <div class="stat-label text-muted">Hybrid</div>
+            </div>
+          </div>
+          <div class="chart-wrap"><canvas id="comparisonChart"></canvas></div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Detection Comparison -->
-  <div class="card shadow-sm mb-4">
-    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-      <strong>Detection Method Comparison</strong>
-      <a href="/api/audit-report/" class="btn btn-sm btn-outline-dark">Download Audit Report (PDF)</a>
-    </div>
-    <div class="card-body">
-      <div class="row g-3 mb-3">
-        <div class="col-md-4 text-center">
-          <div class="text-muted small">Rule-Only Detection Rate</div>
-          <div class="fs-3 fw-bold text-secondary" id="rule-rate">—</div>
-        </div>
-        <div class="col-md-4 text-center">
-          <div class="text-muted small">ML-Only Detection Rate</div>
-          <div class="fs-3 fw-bold text-info" id="ml-rate">—</div>
-        </div>
-        <div class="col-md-4 text-center">
-          <div class="text-muted small">Hybrid Detection Rate</div>
-          <div class="fs-3 fw-bold text-success" id="hybrid-rate">—</div>
-        </div>
-      </div>
-      <canvas id="comparisonChart" style="max-height:220px"></canvas>
-    </div>
-  </div>
+  </div><!-- end main-grid -->
 
-</div><!-- end container-fluid -->
+  <!-- Footer -->
+  <footer class="text-center text-muted py-1 small d-none d-lg-block">
+    Nepal Engineering College
+  </footer>
 
-<!-- Footer -->
-<footer class="text-center text-muted py-3 small">
-  Nepal Engineering College
-</footer>
+</div><!-- end dashboard-shell -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -364,7 +455,11 @@
             labels: riskLabels,
             datasets: [{ label: 'Events', data: riskData, backgroundColor: riskColors }]
           },
-          options: { responsive: true, plugins: { legend: { display: false } } }
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+          }
         });
       }
 
@@ -389,7 +484,7 @@
               tension: 0.3,
             }]
           },
-          options: { responsive: true }
+          options: { responsive: true, maintainAspectRatio: false }
         });
       }
 
@@ -423,6 +518,7 @@
           },
           options: {
             responsive: true,
+            maintainAspectRatio: false,
             scales: { y: { beginAtZero: true, max: 100 } },
             plugins: { legend: { display: false } }
           }
@@ -440,7 +536,7 @@
       document.getElementById('active-user-count').textContent = users.length;
 
       if (users.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">No active sessions</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">No active sessions</td></tr>';
         return;
       }
 
@@ -448,7 +544,6 @@
         <tr>
           <td><strong>${u.username}</strong></td>
           <td><span class="badge bg-secondary">${u.role}</span></td>
-          <td class="text-muted">${u.last_activity}</td>
           <td>
             ${u.status === 'ACTIVE'
               ? '<span class="badge bg-success">&#9679; ACTIVE</span>'
