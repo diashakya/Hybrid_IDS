@@ -33,7 +33,7 @@ PHASE_9_STATUS: LOCKED
 |---|---|
 | No React, npm, WebSockets, Redis, Celery, Docker | Never suggest or use these |
 | Frontend only | Plain HTML + Bootstrap 5 CDN + Vanilla JS |
-| Dashboard updates | `setInterval` every 30 seconds only — no WebSockets |
+| Dashboard updates | `setInterval` polling only — no WebSockets (currently every 5s; was 30s) |
 | IDS pipeline | Runs synchronously inside Django middleware — no background tasks |
 | Database | SQLite for all development and demo |
 | `AUTH_USER_MODEL` | Must be set in `settings.py` BEFORE the first `migrate` is ever run |
@@ -229,7 +229,7 @@ async function fetchAlerts() {
   chart.update(); // CRITICAL — charts freeze without this
 }
 fetchAlerts();
-setInterval(fetchAlerts, 30000);
+setInterval(fetchAlerts, 5000); // 5s — shortened from the original 30s for near-live updates
 ```
 
 ---
@@ -333,7 +333,7 @@ SKIP_PATHS = ['/static/', '/media/', '/favicon.ico', '/admin/jsi18n/']
 | 5 | Rule engine all 6 rules | Shell test returns rule_score=80 for brute force |
 | 6 | Synthetic data + ML training | `python manage.py train_ids_model` succeeds, score_event() returns 0–100 |
 | 7 | Risk scorer + decision + compliance + full pipeline | ALL SecurityEvent fields populated after login |
-| 8 | Dashboard + 4 API endpoints | Dashboard loads, all endpoints return JSON, alert appears within 30s |
+| 8 | Dashboard + 4 API endpoints | Dashboard loads, all endpoints return JSON, alert appears within 5s |
 | 9 | Evaluation + audit report | Comparison table shows hybrid > rule-only and ML-only |
 
 ---
