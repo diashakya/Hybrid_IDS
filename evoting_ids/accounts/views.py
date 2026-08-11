@@ -3,6 +3,8 @@ from django.shortcuts import render,redirect
 # Create your views here.
 from django.views import View
 from django.contrib.auth import login, authenticate
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.contrib import messages
 from .models import CustomUser
 
@@ -18,6 +20,13 @@ def register_view(request):
 
           if CustomUser.objects.filter(username=username).exists():
               messages.error(request, 'Username already taken.')
+              return render(request, 'accounts/register.html')
+
+          try:
+              validate_password(password1, user=CustomUser(username=username))
+          except ValidationError as e:
+              for error in e.messages:
+                  messages.error(request, error)
               return render(request, 'accounts/register.html')
 
           user = CustomUser.objects.create_user(
