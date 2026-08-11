@@ -361,7 +361,7 @@
       <div class="card shadow-sm panel-card">
         <div class="card-header bg-white d-flex justify-content-between align-items-center flex-wrap gap-1">
           <h6 class="mb-0">Live Alert Feed
-            <small class="text-muted fw-normal"> — HIGH and CRITICAL events · every 30s</small>
+            <small class="text-muted fw-normal"> — HIGH and CRITICAL events · every 5s</small>
           </h6>
           <div class="filter-chips" id="alert-filter-chips">
             <button type="button" class="filter-chip active" data-level="ALL">All</button>
@@ -782,12 +782,14 @@
     }
   }
 
+  const POLL_INTERVAL_MS = 5000; // was 30000 — shortened for near-live updates
+
   fetchAlerts();
-  setInterval(fetchAlerts, 30000);
+  setInterval(fetchAlerts, POLL_INTERVAL_MS);
   fetchComparison();
-  setInterval(fetchComparison, 30000);
+  setInterval(fetchComparison, POLL_INTERVAL_MS);
   fetchActiveUsers();
-  setInterval(fetchActiveUsers, 30000);
+  setInterval(fetchActiveUsers, POLL_INTERVAL_MS);
 </script>
 </body>
 </html>
